@@ -177,15 +177,16 @@
 <script>
 "use strict";
 const CFG = {
-  checkoutUrl: "",   // Polar-checkout för Pro
-  polarOrgId: "",    // Polar organization id (publikt)
+  checkoutUrl: "https://buy.polar.sh/polar_cl_YIsvdQGbQjIXMs8abHoawUoh6TtyH7QpQiUvQ1vHKbW", // Polar-checkout för Pro (199 kr)
+  polarOrgId: "9529c75f-b6d9-4ba4-b60e-3c5f86796307", // Polar-organisationen Planwise Tools (publikt id)
+  proLive: false,    // true när Polar kan ta betalt (Stripe-verifiering klar). Till dess är allt gratis.
   freeRows: 3
 };
 const $ = id => document.getElementById(id);
 const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
 const kr = n => Math.round(n).toLocaleString("sv-SE") + " kr";
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
-const BETA = !CFG.polarOrgId;
+const BETA = !CFG.polarOrgId || !CFG.proLive;
 let PRO = BETA, RATES = null, FILES = [], RESULT = null, ROWS = null, CATS = store.get("k4-cats") || {};
 
 // År
