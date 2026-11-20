@@ -50,6 +50,7 @@ for f in sorted(SRC.glob("*.html")):
     (OUT / f.name).write_text(html, encoding="utf-8")
     pages.append(url)
 
+pages.append(f"{domain}/k4/")
 (OUT / "sitemap.xml").write_text(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + "".join(f"  <url><loc>{u}</loc></url>\n" for u in pages)
