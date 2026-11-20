@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K4-hjälpen – deklarera aktier från IBKR, Trading 212, Revolut och Degiro</title>
+<meta name="description" content="Ladda upp filen från din utländska mäklare och få färdiga rader till bilaga K4, inklusive valutakonto (avsnitt C) och SRU-fil till Skatteverket. Allt räknas i din webbläsare.">
+<link rel="canonical" href="https://dwalver.github.io/firmaraknaren/k4/">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Hur deklarerar jag aktier från Interactive Brokers, Trading 212, Revolut eller Degiro?","acceptedAnswer":{"@type":"Answer","text":"Utländska mäklare skickar oftast inte kontrolluppgift till Skatteverket, så du fyller i bilaga K4 själv. Försäljningspris och omkostnadsbelopp ska räknas om till svenska kronor och omkostnadsbeloppet beräknas med genomsnittsmetoden. K4-hjälpen gör det åt dig från mäklarens CSV-fil."}},
+{"@type":"Question","name":"Måste jag deklarera valutakontot?","acceptedAnswer":{"@type":"Answer","text":"Pengar på ett konto i utländsk valuta är en fordran i utländsk valuta. När du köper aktier för dollar eller tar ut pengar anses du avyttra valuta. Enligt Skatteverket redovisas vinst eller förlust i bilaga K4 avsnitt C när omkostnadsbeloppet är förbrukat eller kontot tömts."}},
+{"@type":"Question","name":"Laddas mina affärer upp någonstans?","acceptedAnswer":{"@type":"Answer","text":"Nej. Filerna läses och räknas i din egen webbläsare. Inget skickas till någon server."}},
+{"@type":"Question","name":"Vilken valutakurs används?","acceptedAnswer":{"@type":"Answer","text":"Har mäklaren växlat till kronor används den faktiska växlingen. Annars används Riksbankens publicerade kurs för dagen, eller senast publicerade kurs före, som Skatteverket anvisar."}}
+]}
+</script>
+<style>
+  .k4-drop { border: 2px dashed var(--border); border-radius: var(--radius); padding: 22px; text-align: center; background: var(--surface); cursor: pointer; }
+  .k4-drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .k4-drop input { display: none; }
+  .files { list-style: none; padding: 0; margin: 12px 0 0; }
+  .files li { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: .95rem; }
+  .files li .x { float: right; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 1rem; }
+  .files small { display: block; color: var(--muted); }
+  .opts label { display: block; margin: 6px 0; }
+  .row2 { display: flex; flex-wrap: wrap; gap: 12px; }
+  .row2 > div { flex: 1 1 180px; }
+  .k4 input[type=text], .k4 select, .k4 textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+  .k4 textarea { min-height: 90px; font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; }
+  .btn { display: inline-block; background: var(--accent); color: #fff; border: 0; border-radius: 10px; padding: 11px 18px; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 14px 0; }
+  .sum div { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .sum b { display: block; font-size: 1.25rem; }
+  .sum span { color: var(--muted); font-size: .85rem; }
+  .tbl { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { padding: 7px 9px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 140px; }
+  th { font-weight: 600; background: var(--accent-soft); }
+  tr.locked td { filter: blur(4px); user-select: none; }
+  td .tag { font-size: .75rem; color: var(--muted); display: block; }
+  .warn { background: #fff5e0; border: 1px solid #f0d090; border-radius: 10px; padding: 10px 14px; color: #5a4300; font-size: .92rem; }
+  @media (prefers-color-scheme: dark) { .warn { background: #3a2f12; border-color: #6b5520; color: #f3e2b0; } }
+  .warn ul { margin: 6px 0 0; padding-left: 18px; }
+  .note { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; font-size: .95rem; }
+  .hide { display: none !important; }
+  .pro { border: 2px solid var(--accent); }
+  .ok { color: var(--accent); font-weight: 600; }
+  details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .muted { color: var(--muted); }
+  @media print { header.site, footer, .noprint { display: none !important; } tr.locked td { filter: none; } }
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="../index.html">Firmaräknaren</a>
+<nav><a href="../moms.html">Moms</a><a href="../egenavgifter.html">Egenavgifter</a><a href="../timpris.html">Timpris</a><a href="./">K4-hjälpen</a><a href="../mallar.html">Mallar</a></nav>
+</div></header>
+
+<main><div class="wrap k4">
+<h1>K4-hjälpen: deklarera aktier från utländska mäklare</h1>
+<p class="lead">Ladda upp filen från Interactive Brokers, Trading 212, Revolut eller Degiro. Du får färdiga rader till bilaga K4 i kronor, med genomsnittsmetoden, valutakonto i avsnitt C och en SRU-fil som du kan lämna direkt till Skatteverket.</p>
+
+<p class="note"><b>Dina affärer stannar hos dig.</b> Filerna läses och räknas i din egen webbläsare. Inget laddas upp till någon server.</p>
+
+<div id="beta" class="note hide" style="margin-top:10px"></div>
+
+<h2>1. Välj år och ladda upp filer</h2>
+<div class="row2">
+  <div><label for="year">Inkomstår att deklarera</label><select id="year"></select></div>
+  <div><label>&nbsp;</label><span class="muted" id="rates-info">Laddar Riksbankens kurser…</span></div>
+</div>
+<p class="muted" style="font-size:.92rem">Ladda upp <b>alla år</b> sedan du började köpa, inte bara det år du deklarerar. Annars blir omkostnadsbeloppet fel. Du kan ladda upp flera filer, även från olika mäklare.</p>
+<label class="k4-drop" id="drop">
+  <input type="file" id="file" accept=".csv,.txt,text/csv" multiple>
+  <b>Välj CSV-filer</b> eller dra hit dem<br><span class="muted">Hur du hämtar filen från din mäklare står längre ner.</span>
+</label>
+<ul class="files" id="files"></ul>
+
+<details>
+  <summary>Egna justeringar: ingående innehav, splitar och affärer som saknas</summary>
+  <p class="muted" style="font-size:.92rem">Klistra in rader i formatet nedan (semikolon mellan fälten). Typ kan vara <b>Köp</b>, <b>Sälj</b>, <b>Split</b> (antal = nya aktier per gammal, t.ex. 10) eller <b>Ingående</b> (antal och totalt omkostnadsbelopp i SEK för aktier du köpte innan filerna börjar). <a href="mall.csv" download>Ladda ner mallen som fil</a>.</p>
+  <textarea id="manual" placeholder="Datum;Typ;Värdepapper;ISIN;Antal;Kurs;Valuta;Avgift;Belopp SEK
+2019-06-01;Ingående;Apple Inc;US0378331005;20;;;;25000
+2024-06-10;Split;Nvidia;US67066G1040;10;;;;"></textarea>
+</details>
+
+<div class="opts">
+  <label><input type="checkbox" id="schablon"> Använd schablonmetoden (20 % av försäljningspriset) när den ger lägre vinst. Gäller marknadsnoterade aktier och fonder.</label>
+  <label><input type="checkbox" id="merge"> Slå ihop flera försäljningar av samma värdepapper till en rad</label>
+</div>
+<p><button class="btn" id="go" disabled>Räkna fram K4</button></p>
+
+<section id="out" class="hide">
+  <h2>2. Resultat för <span id="yr"></span></h2>
+  <div class="sum" id="sum"></div>
+  <div id="warns"></div>
+
+  <h3>Avsnitt A – marknadsnoterade aktier, fonder m.m.</h3>
+  <div class="tbl"><table id="tA"></table></div>
+  <p id="lockA" class="muted hide" style="font-size:.92rem"></p>
+
+  <div id="secC">
+    <h3>Avsnitt C – valuta (valutakonto) och räntefonder</h3>
+    <p class="muted" style="font-size:.92rem">Pengar på ett konto i utländsk valuta räknas som en fordran. Vinst eller förlust uppstår först när omkostnadsbeloppet är förbrukat eller kontot har tömts, enligt Skatteverkets rättsliga vägledning.</p>
+    <div class="tbl"><table id="tC"></table></div>
+  </div>
+
+  <details><summary>Innehav och valutasaldon vid årets slut</summary><div id="hold"></div></details>
+
+  <div class="card pro noprint" id="pro-box" style="margin-top:22px">
+    <h3 style="margin-top:0">Hämta allt till deklarationen</h3>
+    <p>Pro låser upp alla rader, export till Excel/CSV, utskrift och SRU-filer som du laddar upp i Skatteverkets e-tjänst Filöverföring. Engångsköp, gäller alla år.</p>
+    <p><a class="btn" id="buy" target="_blank" rel="noopener">Lås upp Pro – 199 kr</a></p>
+    <div class="row2"><div><label for="k-in">Har du redan köpt? Klistra in licensnyckeln</label><input type="text" id="k-in" autocomplete="off" placeholder="K4-XXXX-XXXX"></div><div style="flex:0 0 auto;align-self:end"><button class="btn ghost" id="k-go">Aktivera</button></div></div>
+    <p id="k-msg" class="hide"></p>
+  </div>
+
+  <div id="exports" class="noprint" style="margin-top:22px">
+    <h3>3. Lämna till Skatteverket</h3>
+    <p><button class="btn ghost" id="csv">Ladda ner som CSV (Excel)</button> <button class="btn ghost" id="print">Skriv ut</button></p>
+    <details open><summary>Skapa SRU-filer för Filöverföring</summary>
+      <p class="muted" style="font-size:.92rem">SRU-filerna skapas här i webbläsaren. Logga sedan in på Skatteverkets e-tjänst <i>Filöverföring</i>, ladda upp båda filerna och granska innan du skickar. Uppgifterna nedan sparas inte.</p>
+      <div class="row2">
+        <div><label for="pnr">Personnummer (ÅÅÅÅMMDD-XXXX)</label><input type="text" id="pnr" autocomplete="off"></div>
+        <div><label for="namn">Namn</label><input type="text" id="namn" autocomplete="name"></div>
+      </div>
+      <div class="row2">
+        <div><label for="postnr">Postnummer</label><input type="text" id="postnr" autocomplete="postal-code"></div>
+        <div><label for="postort">Postort</label><input type="text" id="postort" autocomplete="address-level2"></div>
+      </div>
+      <p><button class="btn" id="sru">Skapa INFO.SRU och BLANKETTER.SRU</button> <span id="sru-msg"></span></p>
+    </details>
+  </div>
+</section>
+
+<div class="warn" style="margin-top:28px">
+  <b>Ansvarsfriskrivning.</b> K4-hjälpen är ett räknehjälpmedel, inte skatterådgivning. Du ansvarar själv för att uppgifterna i din deklaration är korrekta och fullständiga. Kontrollera resultatet mot dina underlag, särskilt om du har optioner, terminer, blankning, fusioner, inlösen, utdelning i aktier eller affärer som saknas i filerna. Vid osäkerhet: kontakta Skatteverket eller en rådgivare.
+</div>
+
+<h2>Så hämtar du filen från din mäklare</h2>
+<details><summary>Interactive Brokers (IBKR)</summary>
+<p>Logga in i Client Portal → <i>Performance &amp; Reports</i> → <i>Statements</i> → <i>Activity</i>. Välj period <b>Annual</b> (ett år i taget, alla år sedan första köpet), format <b>CSV</b> och klicka <i>Run</i>. Ladda upp alla årsfiler samtidigt. Optioner och terminer hoppas över i den här versionen.</p></details>
+<details><summary>Trading 212</summary>
+<p>Öppna appen eller webben → <i>History</i> → ikonen för export → välj datumintervall (högst ett år per fil) och kryssa i <b>Orders</b>. Upprepa för varje år och ladda upp alla filer.</p></details>
+<details><summary>Revolut (aktier)</summary>
+<p>I appen: <i>Invest</i> → <i>…</i> → <i>Documents</i> → <i>Brokerage account</i> → <i>Account statement</i> → välj <b>Excel/CSV</b> och period från första köpet. Insättningar till aktiekontot räknas om med Riksbankens kurs, eftersom växlingen syns i ditt vanliga Revolut-konto och inte i filen.</p></details>
+<details><summary>Degiro</summary>
+<p>Logga in → <i>Inkorg</i> → <i>Transaktioner</i> → välj period från första köpet → <b>Exportera</b> → <b>CSV</b>. Med AutoFX i SEK används Degiros faktiska belopp i kronor.</p></details>
+<details><summary>Annan mäklare eller kryptobörs</summary>
+<p>Använd <a href="mall.csv" download>vår mall</a> och fyll i dina affärer. Kryptovalutor redovisas i avsnitt D och stöds inte här.</p></details>
+
+<h2>Så räknar K4-hjälpen</h2>
+<ul>
+<li><b>Genomsnittsmetoden:</b> omkostnadsbeloppet per aktie är det totala inköpspriset inklusive courtage, delat med antalet aktier. Varje försäljning minskar det med snittet gånger antalet sålda.</li>
+<li><b>Valutakurs:</b> har mäklaren växlat till kronor används det faktiska beloppet i kronor. Annars Riksbankens publicerade kurs för dagen, eller senast publicerade kurs före (helger).</li>
+<li><b>Valutakonto (avsnitt C):</b> insättningar, försäljningar och utdelningar ökar kontots omkostnadsbelopp. Köp, avgifter och uttag minskar det med sitt värde i kronor. Vinst redovisas när omkostnadsbeloppet tar slut, och vinst eller förlust när kontot töms.</li>
+<li><b>Avrundning:</b> belopp avrundas till hela kronor. Antal aktier anges i hela tal på K4, så bråkdelar avrundas (minst 1).</li>
+</ul>
+<p class="muted" style="font-size:.92rem">Källor: Skatteverkets <a href="https://www.skatteverket.se/privat/skatter/vardepapper/omovrigavardepapper/utlandskvaluta.4.233f91f71260075abe8800098753.html" rel="noopener">sida om utländsk valuta</a> och rättsliga vägledning om kapitalvinstberäkning. Fältkoderna följer Skatteverkets tekniska beskrivning för K4 2026P4.</p>
+</div></main>
+
+<footer><div class="wrap"><p class="muted" style="font-size:.9rem">Firmaräknaren · <a href="../om.html">Om sajten</a> · K4-hjälpen är ett räknehjälpmedel och ersätter inte Skatteverkets regler.</p></div></footer>
+
+<script src="engine.js"></script>
+<script src="parsers.js"></script>
+<script>
+"use strict";
+const CFG = {
+  checkoutUrl: "",   // Polar-checkout för Pro
+  polarOrgId: "",    // Polar organization id (publikt)
+  freeRows: 3
+};
+const $ = id => document.getElementById(id);
+const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
+const kr = n => Math.round(n).toLocaleString("sv-SE") + " kr";
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const BETA = !CFG.polarOrgId;
+let PRO = BETA, RATES = null, FILES = [], RESULT = null, ROWS = null, CATS = store.get("k4-cats") || {};
+
+// År
+(function(){
+  const now = new Date(), y = now.getFullYear();
+  const def = now.getMonth() >= 9 ? y : y - 1;
+  for (let yy = y; yy >= y - 5; yy--) { const o = document.createElement("option"); o.value = yy; o.textContent = yy + (yy === def ? " (deklareras " + (yy + 1) + ")" : ""); if (yy === def) o.selected = true; $("year").appendChild(o); }
+})();
+if (BETA) { $("beta").innerHTML = "<b>Gratis under lanseringen.</b> Alla funktioner, inklusive SRU-filer och export, är öppna för alla just nu."; $("beta").classList.remove("hide"); }
+
+// Kurser
+fetch("rates.json", { cache: "no-cache" }).then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(j => {
+  RATES = new K4Engine.Rates(j);
+  $("rates-info").textContent = "Riksbankens kurser t.o.m. " + (j.currencies.USD ? j.currencies.USD.last : j.updated) + " (" + Object.keys(j.currencies).length + " valutor).";
+  update();
+}).catch(() => { $("rates-info").textContent = "Kunde inte ladda valutakurserna. Ladda om sidan om en stund."; });
+
+// Filer
+function addFiles(list) {
+  [...list].forEach(f => {
+    const rd = new FileReader();
+    rd.onload = () => {
+      let text = rd.result;
+      if (/�/.test(text)) { const r2 = new FileReader(); r2.onload = () => handle(f.name, r2.result); r2.readAsText(f, "windows-1252"); return; }
+      handle(f.name, text);
+    };
+    rd.readAsText(f, "utf-8");
+  });
+}
+function handle(name, text) {
+  try { const p = K4Parsers.parseFile(text, name); FILES.push({ name, ...p }); }
+  catch (e) { FILES.push({ name, error: e.message, events: [] }); }
+  renderFiles(); update();
+}
+function renderFiles() {
+  $("files").innerHTML = FILES.map((f, i) => `<li><button class="x" data-i="${i}" title="Ta bort">✕</button><b>${esc(f.name)}</b> ${f.error ? `<small style="color:#b3261e">${esc(f.error)}</small>` : `<small>${esc(f.broker)} · ${f.events.filter(e => e.kind === "TRADE").length} affärer${f.events.some(e => e.kind === "CASH") ? " · valutakonto" : ""}</small>` + f.notes.map(n => `<small>${esc(n)}</small>`).join("")}</li>`).join("");
+  document.querySelectorAll("#files .x").forEach(b => b.onclick = () => { FILES.splice(+b.dataset.i, 1); renderFiles(); update(); });
+}
+const drop = $("drop");
+$("file").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
+["dragover", "dragenter"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+$("manual").addEventListener("input", update);
+function update() { $("go").disabled = !RATES || !(FILES.some(f => f.events.length) || $("manual").value.trim()); }
+
+// Beräkning
+function dedupe(events) {
+  const seen = new Set();
+  return events.filter(e => { const k = JSON.stringify([e.kind, e.side, e.date, e.time, e.symbol, e.qty, e.price, e.amount, e.currency, e.source, e.label]); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+$("go").addEventListener("click", run);
+["schablon", "merge"].forEach(id => $(id).addEventListener("change", () => RESULT && render()));
+$("year").addEventListener("change", () => RESULT && render());
+function run() {
+  let events = [];
+  FILES.forEach(f => events = events.concat(f.events));
+  const man = $("manual").value.trim();
+  const extraNotes = [];
+  if (man) {
+    try { const txt = /^datum/i.test(man) ? man : "Datum;Typ;Värdepapper;ISIN;Antal;Kurs;Valuta;Avgift;Belopp SEK\n" + man; const p = K4Parsers.parseFile(txt, "egna justeringar"); events = events.concat(p.events); extraNotes.push(...p.notes); }
+    catch (e) { extraNotes.push("Egna justeringar: " + e.message); }
+  }
+  const before = events.length; events = dedupe(events);
+  if (before - events.length) extraNotes.push((before - events.length) + " dubbla rader (samma affär i flera filer) räknades bara en gång.");
+  RESULT = K4Engine.compute(events, { rates: RATES });
+  RESULT.extraNotes = extraNotes;
+  render();
+  $("out").classList.remove("hide");
+  $("out").scrollIntoView({ behavior: "smooth" });
+}
+function render() {
+  const year = +$("year").value;
+  $("yr").textContent = year;
+  ROWS = K4Engine.k4Rows(RESULT, { year, schablon: $("schablon").checked, merge: $("merge").checked, categories: CATS });
+  const sA = ROWS.sumA, sC = ROWS.sumC;
+  $("sum").innerHTML = `<div><span>Avsnitt A vinst</span><b>${kr(sA.gain)}</b></div><div><span>Avsnitt A förlust</span><b>${kr(sA.loss)}</b></div><div><span>Avsnitt C vinst</span><b>${kr(sC.gain)}</b></div><div><span>Avsnitt C förlust</span><b>${kr(sC.loss)}</b></div><div><span>Rader på K4</span><b>${ROWS.A.length + ROWS.C.length}</b></div>`;
+  const w = RESULT.warnings.filter(x => !x.date || x.date.slice(0, 4) <= String(year)).map(x => (x.date ? x.date + ": " : "") + x.msg).concat(RESULT.extraNotes || []);
+  ROWS.A.concat(ROWS.C).forEach(r => r.warnings.forEach(m => w.push(r.date + " " + r.beteckning + ": " + m)));
+  $("warns").innerHTML = w.length ? `<div class="warn"><b>Kontrollera</b><ul>${[...new Set(w)].map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
+  const head = `<tr><th>Beteckning</th><th>Antal</th><th>Försäljningspris</th><th>Omkostnadsbelopp</th><th>Vinst</th><th>Förlust</th></tr>`;
+  const lim = PRO ? Infinity : CFG.freeRows;
+  const rowHtml = (r, i, sec) => `<tr class="${i >= lim ? "locked" : ""}"><td>${esc(r.beteckning)}<span class="tag">${r.sales > 1 ? r.sales + " försäljningar, senast " : ""}${esc(r.date)}${r.method === "schablon" ? " · schablon" : ""}${r.isCurrency ? " · " + esc(r.account) : ""}${!r.isCurrency ? ` · <select data-k="${esc(r.key)}" aria-label="Avsnitt"><option value="A"${sec === "A" ? " selected" : ""}>Avsnitt A</option><option value="C"${sec === "C" ? " selected" : ""}>Avsnitt C (räntefond)</option></select>` : ""}</span></td><td>${r.isCurrency ? r.qtyR.toLocaleString("sv-SE") : r.qtyR}</td><td>${kr(r.proceedsR)}</td><td>${kr(r.omkR)}</td><td>${r.gain ? kr(r.gain) : ""}</td><td>${r.loss ? kr(r.loss) : ""}</td></tr>`;
+  const sumRow = s => `<tr><th>Summa</th><th></th><th>${kr(s.proceeds)}</th><th>${kr(s.omk)}</th><th>${kr(s.gain)}</th><th>${kr(s.loss)}</th></tr>`;
+  $("tA").innerHTML = head + (ROWS.A.length ? ROWS.A.map((r, i) => rowHtml(r, i, "A")).join("") + sumRow(sA) : `<tr><td colspan="6">Inga försäljningar ${year}.</td></tr>`);
+  $("tC").innerHTML = head + (ROWS.C.length ? ROWS.C.map((r, i) => rowHtml(r, i, "C")).join("") + sumRow(sC) : `<tr><td colspan="6">Inget att redovisa i avsnitt C ${year}.</td></tr>`);
+  const lockedN = Math.max(0, ROWS.A.length - lim) + Math.max(0, ROWS.C.length - lim);
+  $("lockA").textContent = lockedN ? `${lockedN} rader är dolda. Summorna ovan gäller alla rader.` : "";
+  $("lockA").classList.toggle("hide", !lockedN);
+  document.querySelectorAll("select[data-k]").forEach(s => s.onchange = () => { CATS[s.dataset.k] = s.value; store.set("k4-cats", CATS); render(); });
+  const h = RESULT.holdings.map(x => `<tr><td>${esc(x.name || x.symbol)}</td><td>${+x.qty.toFixed(4)}</td><td>${kr(x.cost)}</td><td>${kr(x.avg)}</td></tr>`).join("");
+  const c = RESULT.cash.filter(x => Math.abs(x.bal) > 0.005).map(x => `<tr><td>${esc(x.ccy)} (${esc(x.account)})</td><td>${x.bal.toFixed(2)}</td><td>${kr(x.omk)}</td><td></td></tr>`).join("");
+  $("hold").innerHTML = `<p class="muted" style="font-size:.9rem">Efter alla händelser i filerna (inte bara valt år). Spara gärna detta till nästa år.</p><div class="tbl"><table><tr><th>Innehav</th><th>Antal</th><th>Omkostnadsbelopp</th><th>Snitt per st</th></tr>${h || `<tr><td colspan="4">Inga kvarvarande innehav.</td></tr>`}${c}</table></div>`;
+  $("pro-box").classList.toggle("hide", PRO);
+  $("exports").classList.toggle("hide", !PRO);
+}
+
+// Export
+function download(name, data, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], { type: type || "application/octet-stream" }));
+  a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$("csv").addEventListener("click", () => {
+  const lines = ["Avsnitt;Beteckning;Antal;Försäljningspris;Omkostnadsbelopp;Vinst;Förlust;Datum;Metod"];
+  [["A", ROWS.A], ["C", ROWS.C]].forEach(([s, rows]) => rows.forEach(r => lines.push([s, '"' + String(r.beteckning).replace(/"/g, '""') + '"', r.qtyR, r.proceedsR, r.omkR, r.gain, r.loss, r.date, r.method].join(";"))));
+  download("K4-" + $("year").value + ".csv", "﻿" + lines.join("\r\n"), "text/csv;charset=utf-8");
+});
+$("print").addEventListener("click", () => window.print());
+$("sru").addEventListener("click", () => {
+  const msg = $("sru-msg");
+  try {
+    if (!$("namn").value.trim() || !$("postnr").value.trim() || !$("postort").value.trim()) throw new Error("Fyll i namn, postnummer och postort.");
+    const s = K4Engine.buildSRU(ROWS, { pnr: $("pnr").value, namn: $("namn").value, postnr: $("postnr").value, postort: $("postort").value }, $("year").value);
+    download("INFO.SRU", K4Engine.latin1Bytes(s.info));
+    setTimeout(() => download("BLANKETTER.SRU", K4Engine.latin1Bytes(s.blanketter)), 400);
+    msg.innerHTML = `<span class="ok">Klart: ${s.count} blankett${s.count > 1 ? "er" : ""} K4.</span>`;
+  } catch (e) { msg.textContent = e.message; }
+});
+
+// Pro (Polar-licens)
+const LIC = "k4-licence", DAY = 864e5;
+function showMsg(h) { $("k-msg").innerHTML = h; $("k-msg").classList.remove("hide"); }
+function setPro(on) { PRO = BETA || on; if (RESULT) render(); }
+async function validate(key) {
+  if (!CFG.polarOrgId) throw new Error("Pro-upplåsningen öppnar snart.");
+  const r = await fetch("https://api.polar.sh/v1/customer-portal/license-keys/validate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key, organization_id: CFG.polarOrgId }) });
+  if (r.status === 404 || r.status === 422) return false;
+  if (!r.ok) throw new Error("Kunde inte nå licensservern. Försök igen om en minut.");
+  const j = await r.json();
+  return j.status === "granted" && (!j.expires_at || new Date(j.expires_at) > new Date());
+}
+$("k-go").addEventListener("click", async () => {
+  const key = $("k-in").value.trim(); if (!key) { showMsg("Klistra in licensnyckeln från kvittot."); return; }
+  $("k-go").disabled = true; showMsg("Kontrollerar…");
+  try { if (await validate(key)) { store.set(LIC, { key, checked: Date.now() }); $("k-in").value = ""; showMsg('<span class="ok">Pro är upplåst på den här enheten.</span>'); setPro(true); } else showMsg("Nyckeln känns inte igen. Kopiera den exakt från kvittot."); }
+  catch (e) { showMsg(esc(e.message)); }
+  $("k-go").disabled = false;
+});
+(async function initPro() {
+  if (CFG.checkoutUrl) $("buy").href = CFG.checkoutUrl; else { $("buy").textContent = "Pro öppnar snart"; $("buy").removeAttribute("href"); $("buy").style.opacity = .6; }
+  const L = store.get(LIC);
+  if (L && L.key) { setPro(true); if (Date.now() - (L.checked || 0) > 14 * DAY) { try { const ok = await validate(L.key); if (ok) store.set(LIC, { key: L.key, checked: Date.now() }); else { localStorage.removeItem(LIC); setPro(false); } } catch (e) {} } }
+})();
+</script>
+</body>
+</html>

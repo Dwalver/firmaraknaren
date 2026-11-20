@@ -1,0 +1,5 @@
+﻿Datum;Typ;Värdepapper;ISIN;Antal;Kurs;Valuta;Avgift;Belopp SEK
+2024-03-15;Ingående;Apple Inc;US0378331005;10;;;;15000
+2025-02-03;Köp;Apple Inc;US0378331005;5;228,50;USD;1;
+2025-06-10;Split;Exempel AB;SE0000000000;2;;;;
+2025-11-20;Sälj;Apple Inc;US0378331005;8;270,10;USD;1;23510
