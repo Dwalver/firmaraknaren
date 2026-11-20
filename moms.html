@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Momskalkylator 2026 – räkna moms 25, 12 och 6 procent</title>
+<meta name="description" content="Räkna ut moms snabbt: lägg på eller räkna bort moms med 25, 12 eller 6 procent. Inkluderar sänkt matmoms 2026.">
+<link rel="canonical" href="https://firmaraknaren.se/moms.html">
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="index.html">Firmaräknaren</a>
+<nav><a href="moms.html">Moms</a><a href="egenavgifter.html">Egenavgifter</a><a href="timpris.html">Timpris</a><a href="mallar.html">Mallar</a></nav>
+</div></header>
+
+<main><div class="wrap">
+<h1>Momskalkylator</h1>
+<p class="lead">Lägg på moms på ett pris, eller räkna bort momsen från ett pris som redan innehåller moms.</p>
+
+<div class="card">
+  <label for="amount">Belopp (kr)</label>
+  <input id="amount" type="number" inputmode="decimal" min="0" step="any" value="1000">
+
+  <label>Beloppet är</label>
+  <div class="radio">
+    <label><input type="radio" name="mode" value="excl" checked> exklusive moms</label>
+    <label><input type="radio" name="mode" value="incl"> inklusive moms</label>
+  </div>
+
+  <label for="rate">Momssats</label>
+  <select id="rate">
+    <option value="25">25 % – de flesta varor och tjänster</option>
+    <option value="12">12 % – hotell och restaurang</option>
+    <option value="6">6 % – livsmedel (tillfälligt från 1 april 2026), böcker, persontransporter</option>
+  </select>
+</div>
+
+<div class="card result">
+  <table>
+    <tr><td>Pris exklusive moms</td><td id="ex"></td></tr>
+    <tr><td>Moms</td><td id="vat"></td></tr>
+    <tr class="total"><td>Pris inklusive moms</td><td id="inc"></td></tr>
+  </table>
+</div>
+
+<h2>Så räknar du moms</h2>
+<p>För att lägga på moms multiplicerar du beloppet utan moms med 1,25, 1,12 eller 1,06. För att räkna bort moms delar du priset med samma tal. Momsen är alltså inte 25 procent av priset inklusive moms, utan 20 procent av det (vid 25 procents moms).</p>
+<p>Om din omsättning är högst 120 000 kr per år kan du ansöka om momsbefrielse. Då lägger du inte på någon moms alls. Läs mer om <a href="https://www.skatteverket.se/foretag/moms.4.18e1b10334ebe8bc80002497.html">moms hos Skatteverket</a>.</p>
+
+<script>
+const fmt = n => n.toLocaleString('sv-SE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' kr';
+function calc() {
+  const a = parseFloat(document.getElementById('amount').value) || 0;
+  const r = parseFloat(document.getElementById('rate').value) / 100;
+  const incl = document.querySelector('input[name=mode]:checked').value === 'incl';
+  const ex = incl ? a / (1 + r) : a;
+  const inc = incl ? a : a * (1 + r);
+  document.getElementById('ex').textContent = fmt(ex);
+  document.getElementById('vat').textContent = fmt(inc - ex);
+  document.getElementById('inc').textContent = fmt(inc);
+}
+document.querySelectorAll('input,select').forEach(e => e.addEventListener('input', calc));
+calc();
+</script>
+
+</div></main>
+<footer><div class="wrap">
+<p>Kalkylatorerna ger uppskattningar baserade på Skatteverkets belopp och procentsatser för inkomstår 2026. De ersätter inte rådgivning. Kontrollera alltid mot <a href="https://www.skatteverket.se">Skatteverket</a> innan du fattar beslut.</p>
+<p><a href="om.html">Om sajten</a> · <a href="mallar.html">Excel-mallar för enskild firma</a></p>
+</div></footer>
+
+</body>
+</html>

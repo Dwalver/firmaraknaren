@@ -1,0 +1,67 @@
+<!--TITLE:Timpriskalkylator för frilansare och konsulter 2026-->
+<!--DESC:Vilket timpris behöver du som frilansare för att få samma lön som en anställd? Räkna med egenavgifter, semester, kostnader och debiteringsgrad.-->
+<h1>Timpriskalkylator för frilansare</h1>
+<p class="lead">Ta reda på vilket timpris du behöver i din enskilda firma för att få ut samma lön som om du vore anställd, med semester, sjukdagar och kostnader inräknade.</p>
+
+<div class="card">
+  <div class="row">
+    <div>
+      <label for="salary">Önskad månadslön före skatt (kr)</label>
+      <input id="salary" type="number" inputmode="decimal" min="0" step="1000" value="40000">
+    </div>
+    <div>
+      <label for="costs">Kostnader i firman per månad (kr)<br><span class="hint">Programvara, telefon, försäkring m.m.</span></label>
+      <input id="costs" type="number" inputmode="decimal" min="0" step="100" value="2000">
+    </div>
+  </div>
+  <div class="row">
+    <div>
+      <label for="pension">Pensionssparande per månad (kr)<br><span class="hint">En anställd får ofta ca 4,5 % av lönen.</span></label>
+      <input id="pension" type="number" inputmode="decimal" min="0" step="100" value="1800">
+    </div>
+    <div>
+      <label for="vac">Semesterveckor per år</label>
+      <input id="vac" type="number" inputmode="decimal" min="0" max="20" step="1" value="5">
+    </div>
+  </div>
+  <div class="row">
+    <div>
+      <label for="sick">Sjuk- och helgdagar per år</label>
+      <input id="sick" type="number" inputmode="decimal" min="0" max="60" step="1" value="15">
+    </div>
+    <div>
+      <label for="bill">Debiteringsgrad (%)<br><span class="hint">Andel av arbetstiden du kan fakturera.</span></label>
+      <input id="bill" type="number" inputmode="decimal" min="10" max="100" step="5" value="75">
+    </div>
+  </div>
+</div>
+
+<div class="card result">
+  <table>
+    <tr><td>Överskott som behövs per år</td><td id="need"></td></tr>
+    <tr><td>Fakturerbara timmar per år</td><td id="hours"></td></tr>
+    <tr class="total"><td>Timpris exklusive moms</td><td id="rate"></td></tr>
+    <tr><td>Timpris inklusive 25 % moms</td><td id="ratevat"></td></tr>
+  </table>
+</div>
+
+<h2>Hur räknas det?</h2>
+<p>Lönen räknas om till ett överskott som täcker egenavgifter på 28,97 procent (2026), plus dina kostnader och pensionssparande. Det delas sedan med antalet timmar du faktiskt kan fakturera: 40 timmar i veckan, minus semester och sjukdagar, gånger debiteringsgraden. Få frilansare fakturerar mer än 70–80 procent av tiden, eftersom administration och kundjakt också tar tid.</p>
+<p>Kalkylatorn räknar inte med nedsättningen av egenavgifter, så resultatet är något försiktigt.</p>
+
+<script>
+const kr = n => Math.round(n).toLocaleString('sv-SE') + ' kr';
+const v = id => parseFloat(document.getElementById(id).value) || 0;
+function calc() {
+  const need = v('salary') * 12 * 1.2897 + v('costs') * 12 + v('pension') * 12;
+  const weeks = Math.max(0, 52 - v('vac'));
+  const hours = Math.max(1, (weeks * 40 - v('sick') * 8) * Math.min(100, Math.max(0, v('bill'))) / 100);
+  const rate = need / hours;
+  document.getElementById('need').textContent = kr(need);
+  document.getElementById('hours').textContent = Math.round(hours).toLocaleString('sv-SE') + ' h';
+  document.getElementById('rate').textContent = kr(rate);
+  document.getElementById('ratevat').textContent = kr(rate * 1.25);
+}
+document.querySelectorAll('input').forEach(e => e.addEventListener('input', calc));
+calc();
+</script>

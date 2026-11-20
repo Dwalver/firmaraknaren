@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://firmaraknaren.se/sitemap.xml

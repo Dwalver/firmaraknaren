@@ -1,0 +1,4 @@
+<header class="site"><div class="wrap">
+<a class="logo" href="index.html">Firmaräknaren</a>
+<nav><a href="moms.html">Moms</a><a href="egenavgifter.html">Egenavgifter</a><a href="timpris.html">Timpris</a><a href="mallar.html">Mallar</a></nav>
+</div></header>
