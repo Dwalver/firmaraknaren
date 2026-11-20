@@ -14,13 +14,23 @@ CONFIG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
 head = (SRC / "_head.txt").read_text(encoding="utf-8")
 foot = (SRC / "_foot.txt").read_text(encoding="utf-8")
 domain = CONFIG["DOMAIN"].rstrip("/")
+import datetime
+LASTMOD = datetime.date.today().isoformat()
 
 pages = []
-for f in sorted(SRC.glob("*.html")):
+guides = []
+files = sorted(SRC.glob("*.html"), key=lambda f: f.name == "guider.html")
+for f in files:
     body = f.read_text(encoding="utf-8")
     title = re.search(r"<!--TITLE:(.*?)-->", body).group(1)
     desc = re.search(r"<!--DESC:(.*?)-->", body).group(1)
-    body = re.sub(r"<!--(TITLE|DESC):.*?-->\n?", "", body)
+    ld = re.search(r"<!--LD:(.*?)-->", body, re.S)
+    ld = f'<script type="application/ld+json">{ld.group(1).strip()}</script>\n' if ld else ""
+    if "<!--GUIDE-->" in body:
+        guides.append((f.name, re.search(r"<h1>(.*?)</h1>", body).group(1), desc))
+    body = re.sub(r"<!--(TITLE|DESC|LD):.*?-->\n?", "", body, flags=re.S).replace("<!--GUIDE-->\n", "")
+    body = body.replace("{{GUIDE_LIST}}", "\n".join(
+        f'<div class="card"><h3><a href="{n}">{h}</a></h3><p>{d}</p></div>' for n, h, d in guides))
     url = f"{domain}/" if f.name == "index.html" else f"{domain}/{f.name}"
     html = f"""<!doctype html>
 <html lang="sv">
@@ -31,6 +41,13 @@ for f in sorted(SRC.glob("*.html")):
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{url}">
 <link rel="stylesheet" href="style.css">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{url}">
+<meta property="og:site_name" content="Firmaräknaren">
+<meta property="og:locale" content="sv_SE">
+{ld}
 {CONFIG.get("ANALYTICS_SNIPPET", "")}
 </head>
 <body>
@@ -53,7 +70,7 @@ for f in sorted(SRC.glob("*.html")):
 pages.append(f"{domain}/k4/")
 (OUT / "sitemap.xml").write_text(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    + "".join(f"  <url><loc>{u}</loc></url>\n" for u in pages)
+    + "".join(f"  <url><loc>{u}</loc><lastmod>{LASTMOD}</lastmod></url>\n" for u in pages)
     + "</urlset>\n",
     encoding="utf-8",
 )

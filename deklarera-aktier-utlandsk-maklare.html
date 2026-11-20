@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deklarera aktier från IBKR, Trading 212, Revolut och Degiro – K4 steg för steg</title>
+<meta name="description" content="Så deklarerar du aktieaffärer hos en utländsk mäklare på blankett K4: genomsnittsmetoden, omräkning till kronor, valutakonto och SRU-fil. Steg för steg.">
+<link rel="canonical" href="https://dwalver.github.io/firmaraknaren/deklarera-aktier-utlandsk-maklare.html">
+<link rel="stylesheet" href="style.css">
+<meta property="og:title" content="Deklarera aktier från IBKR, Trading 212, Revolut och Degiro – K4 steg för steg">
+<meta property="og:description" content="Så deklarerar du aktieaffärer hos en utländsk mäklare på blankett K4: genomsnittsmetoden, omräkning till kronor, valutakonto och SRU-fil. Steg för steg.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dwalver.github.io/firmaraknaren/deklarera-aktier-utlandsk-maklare.html">
+<meta property="og:site_name" content="Firmaräknaren">
+<meta property="og:locale" content="sv_SE">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Deklarera aktier från en utländsk mäklare på blankett K4","step":[{"@type":"HowToStep","name":"Ladda ner årets transaktioner","text":"Exportera alla köp och försäljningar för inkomståret som CSV från mäklaren."},{"@type":"HowToStep","name":"Räkna om till kronor","text":"Räkna om varje köp och försäljning till svenska kronor med den kurs som gällde på affärsdagen."},{"@type":"HowToStep","name":"Räkna omkostnadsbelopp med genomsnittsmetoden","text":"Lägg ihop alla köp av samma aktie och fördela anskaffningsutgiften jämnt per aktie."},{"@type":"HowToStep","name":"Fyll i K4","text":"Fyll i avsnitt A för aktier och avsnitt C för valuta, eller lämna en SRU-fil via Skatteverkets filöverföring."}]}</script>
+
+
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="logo" href="index.html">Firmaräknaren</a>
+<nav><a href="moms.html">Moms</a><a href="egenavgifter.html">Egenavgifter</a><a href="timpris.html">Timpris</a><a href="mallar.html">Mallar</a><a href="guider.html">Guider</a><a href="k4/">K4-hjälpen</a></nav>
+</div></header>
+
+<main><div class="wrap">
+<h1>Deklarera aktier från en utländsk mäklare</h1>
+<p class="lead">Handlar du via Interactive Brokers, Trading 212, Revolut eller Degiro får Skatteverket oftast inga uppgifter om dina försäljningar. Då måste du själv fylla i blankett K4. Så här gör du, steg för steg.</p>
+
+<h2>Varför är det krångligare än hos Avanza eller Nordnet?</h2>
+<p>Svenska banker och mäklare skickar kontrolluppgifter, så dina försäljningar finns förifyllda i deklarationen. En utländsk mäklare gör normalt inte det. Du ansvarar själv för att redovisa varje försäljning, och allt ska vara omräknat till svenska kronor.</p>
+
+<h2>Steg 1: Ladda ner årets transaktioner</h2>
+<p>Exportera alla köp och försäljningar för inkomståret som en CSV-fil. Ta med köp från tidigare år för de aktier du har sålt, eftersom de påverkar omkostnadsbeloppet.</p>
+<ul>
+<li><b>Interactive Brokers:</b> Reports → Flex Queries eller Activity Statement som CSV.</li>
+<li><b>Trading 212:</b> History → Export, välj hela perioden.</li>
+<li><b>Revolut:</b> Investeringar → Kontoutdrag → Trading account statement (Excel/CSV).</li>
+<li><b>Degiro:</b> Inkorg → Transaktioner, exportera som CSV.</li>
+</ul>
+
+<h2>Steg 2: Räkna om allt till kronor</h2>
+<p>Varje köp och försäljning ska räknas om till svenska kronor. Har mäklaren växlat till kronor används den faktiska växlingen. Annars använder du valutakursen för affärsdagen, till exempel Riksbankens publicerade kurs.</p>
+
+<h2>Steg 3: Använd genomsnittsmetoden</h2>
+<p>Har du köpt samma aktie flera gånger räknar du ut ett genomsnittligt omkostnadsbelopp per aktie. Säljer du en del av innehavet följer det genomsnittliga omkostnadsbeloppet med. För marknadsnoterade aktier får du i stället välja schablonmetoden, där omkostnadsbeloppet är 20 % av försäljningspriset efter avdrag för courtage. Det lönar sig bara om aktien har stigit mycket.</p>
+
+<h2>Steg 4: Glöm inte valutakontot</h2>
+<p>Om pengarna ligger kvar i dollar eller euro mellan affärerna har du en fordran i utländsk valuta. Varje gång du använder valutan, till exempel för att köpa aktier, räknas det som en försäljning av valuta. Vinsten eller förlusten redovisas i avsnitt C på K4. Läs mer i guiden om <a href="valutakonto-k4.html">valutakonto i deklarationen</a>.</p>
+
+<h2>Steg 5: Fyll i K4 eller skicka en SRU-fil</h2>
+<p>Aktier redovisas i avsnitt A och valuta i avsnitt C. Har du många affärer kan du lämna en SRU-fil via Skatteverkets e-tjänst Filöverföring i stället för att skriva in varje rad. Förluster på marknadsnoterade aktier kvittas fullt mot vinster på marknadsnoterade aktier och fondandelar. En förlust som blir över är avdragsgill till 70 %.</p>
+
+<div class="card result">
+<h3>Låt K4-hjälpen göra jobbet</h3>
+<p>Ladda upp CSV-filen från IBKR, Trading 212, Revolut eller Degiro. K4-hjälpen räknar om allt till kronor med Riksbankens kurser, använder genomsnittsmetoden, tar med valutakontot och skapar SRU-filen. Allt räknas i din webbläsare och ingenting laddas upp.</p>
+<a class="btn" href="k4/">Öppna K4-hjälpen</a>
+</div>
+
+<h2>Utdelningar och utländsk källskatt</h2>
+<p>Utdelningar från utländska aktier finns inte heller förifyllda. De redovisas som kapitalinkomst i deklarationen. Har utländsk källskatt dragits kan du ofta begära avräkning för den, upp till den svenska skatten på utdelningen. Spara mäklarens årsbesked som underlag.</p>
+
+<p class="note">Den här guiden är en sammanfattning och ersätter inte Skatteverkets information. Kontrollera alltid detaljerna hos <a href="https://www.skatteverket.se">Skatteverket</a>.</p>
+
+</div></main>
+<footer><div class="wrap">
+<p>Kalkylatorerna ger uppskattningar baserade på Skatteverkets belopp och procentsatser för inkomstår 2026. De ersätter inte rådgivning. Kontrollera alltid mot <a href="https://www.skatteverket.se">Skatteverket</a> innan du fattar beslut.</p>
+<p><a href="om.html">Om sajten</a> · <a href="guider.html">Guider</a> · <a href="mallar.html">Excel-mallar för enskild firma</a></p>
+</div></footer>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
 <footer><div class="wrap">
 <p>Kalkylatorerna ger uppskattningar baserade på Skatteverkets belopp och procentsatser för inkomstår 2026. De ersätter inte rådgivning. Kontrollera alltid mot <a href="https://www.skatteverket.se">Skatteverket</a> innan du fattar beslut.</p>
-<p><a href="om.html">Om sajten</a> · <a href="mallar.html">Excel-mallar för enskild firma</a></p>
+<p><a href="om.html">Om sajten</a> · <a href="guider.html">Guider</a> · <a href="mallar.html">Excel-mallar för enskild firma</a></p>
 </div></footer>
