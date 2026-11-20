@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://firmaraknaren.se/sitemap.xml
+Sitemap: https://dwalver.github.io/firmaraknaren/sitemap.xml
