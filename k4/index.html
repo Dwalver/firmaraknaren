@@ -177,16 +177,16 @@
 <script>
 "use strict";
 const CFG = {
-  checkoutUrl: "https://buy.polar.sh/polar_cl_YIsvdQGbQjIXMs8abHoawUoh6TtyH7QpQiUvQ1vHKbW", // Polar-checkout för Pro (199 kr)
-  polarOrgId: "9529c75f-b6d9-4ba4-b60e-3c5f86796307", // Polar-organisationen Planwise Tools (publikt id)
-  proLive: false,    // true när Polar kan ta betalt (Stripe-verifiering klar). Till dess är allt gratis.
+  checkoutUrl: "https://dwalver.gumroad.com/l/k4-pro", // Gumroad-produkten K4-hjälpen Pro (199 kr)
+  gumroadProductId: "fuUmywB7lYmntVaDFncLyA==",        // publikt produkt-id för licenskontroll
+  proLive: false,    // true när produkten är publicerad på Gumroad. Till dess är allt gratis.
   freeRows: 3
 };
 const $ = id => document.getElementById(id);
 const store = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
 const kr = n => Math.round(n).toLocaleString("sv-SE") + " kr";
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
-const BETA = !CFG.polarOrgId || !CFG.proLive;
+const BETA = !CFG.gumroadProductId || !CFG.proLive;
 let PRO = BETA, RATES = null, FILES = [], RESULT = null, ROWS = null, CATS = store.get("k4-cats") || {};
 
 // År
@@ -307,17 +307,17 @@ $("sru").addEventListener("click", () => {
   } catch (e) { msg.textContent = e.message; }
 });
 
-// Pro (Polar-licens)
+// Pro (Gumroad-licens)
 const LIC = "k4-licence", DAY = 864e5;
 function showMsg(h) { $("k-msg").innerHTML = h; $("k-msg").classList.remove("hide"); }
 function setPro(on) { PRO = BETA || on; if (RESULT) render(); }
 async function validate(key) {
-  if (!CFG.polarOrgId) throw new Error("Pro-upplåsningen öppnar snart.");
-  const r = await fetch("https://api.polar.sh/v1/customer-portal/license-keys/validate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ key, organization_id: CFG.polarOrgId }) });
-  if (r.status === 404 || r.status === 422) return false;
+  if (!CFG.gumroadProductId) throw new Error("Pro-upplåsningen öppnar snart.");
+  const r = await fetch("https://api.gumroad.com/v2/licenses/verify", { method: "POST", body: new URLSearchParams({ product_id: CFG.gumroadProductId, license_key: key, increment_uses_count: "false" }) });
+  if (r.status === 404) return false;
   if (!r.ok) throw new Error("Kunde inte nå licensservern. Försök igen om en minut.");
-  const j = await r.json();
-  return j.status === "granted" && (!j.expires_at || new Date(j.expires_at) > new Date());
+  const j = await r.json(), p = j.purchase || {};
+  return j.success === true && !p.refunded && !p.chargebacked && !p.disputed;
 }
 $("k-go").addEventListener("click", async () => {
   const key = $("k-in").value.trim(); if (!key) { showMsg("Klistra in licensnyckeln från kvittot."); return; }
