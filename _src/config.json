@@ -1,9 +1,9 @@
 {
   "DOMAIN": "https://dwalver.github.io/firmaraknaren",
   "CONTACT_EMAIL": "hej@firmaraknaren.se",
-  "BUY_KASSABOK": "#kommer-snart",
-  "BUY_FAKTURA": "#kommer-snart",
-  "BUY_BUDGET": "#kommer-snart",
-  "BUY_PAKET": "#kommer-snart",
+  "BUY_KASSABOK": "https://www.etsy.com/listing/4621569206",
+  "BUY_FAKTURA": "https://www.etsy.com/listing/4621563695",
+  "BUY_BUDGET": "https://www.etsy.com/listing/4621570708",
+  "BUY_PAKET": "https://www.etsy.com/listing/4621571264",
   "ANALYTICS_SNIPPET": ""
 }
